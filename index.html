@@ -67,21 +67,8 @@
       background-color: #c4d600;
     }
 
-
     input:focus {
       outline: 2px solid #D0DF00;
-    }
-
-    button {
-      background-color: #D0DF00;
-      border: none;
-      font-weight: bold;
-      color: #000;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #c4d600;
     }
 
     .success {
@@ -113,7 +100,8 @@
     const passwordInput = document.getElementById('password');
     const repeatPasswordInput = document.getElementById('repeatPassword');
 
-    const supabase = supabase.createClient(
+    const { createClient } = supabase;
+    const supabaseClient = createClient(
       'https://ibokmarwzyysudrpwopw.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlib2ttYXJ3enl5c3VkcnB3b3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1MDg4NDEsImV4cCI6MjA1OTA4NDg0MX0.CmdHJBwrXs0KaC_qrHit01wycM-gzflHiovZedPZF5E'
     );
@@ -144,7 +132,7 @@
         return;
       }
 
-      const { error: sessionError } = await supabase.auth.setSession({
+      const { error: sessionError } = await supabaseClient.auth.setSession({
         access_token,
         refresh_token
       });
@@ -156,7 +144,7 @@
         return;
       }
 
-      const { error } = await supabase.auth.updateUser({ password });
+      const { error } = await supabaseClient.auth.updateUser({ password });
 
       if (error) {
         console.error(error);
@@ -171,4 +159,4 @@
     }
   </script>
 </body>
-</html> 
+</html>
