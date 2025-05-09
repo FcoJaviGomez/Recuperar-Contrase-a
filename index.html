@@ -113,7 +113,7 @@
     const passwordInput = document.getElementById('password');
     const repeatPasswordInput = document.getElementById('repeatPassword');
 
-    const supabase = supabase.createClient(
+    const cliente = supabase.createClient(
       'https://ibokmarwzyysudrpwopw.supabase.co',
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlib2ttYXJ3enl5c3VkcnB3b3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1MDg4NDEsImV4cCI6MjA1OTA4NDg0MX0.CmdHJBwrXs0KaC_qrHit01wycM-gzflHiovZedPZF5E'
     );
@@ -144,7 +144,7 @@
         return;
       }
 
-      const { error: sessionError } = await supabase.auth.setSession({
+      const { error: sessionError } = await cliente.auth.setSession({
         access_token,
         refresh_token
       });
@@ -156,7 +156,7 @@
         return;
       }
 
-      const { error } = await supabase.auth.updateUser({ password });
+      const { error } = await cliente.auth.updateUser({ password });
 
       if (error) {
         console.error(error);
