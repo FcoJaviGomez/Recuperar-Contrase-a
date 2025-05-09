@@ -28,26 +28,56 @@
       text-align: center;
     }
 
+    h2 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    p {
+      margin-bottom: 20px;
+      color: #4b5563;
+    }
+
     input {
       width: 100%;
       padding: 14px;
       font-size: 16px;
       border-radius: 8px;
       border: 2px solid #D0DF00;
-      margin: 16px 0 12px 0;
+      outline: none;
       box-sizing: border-box;
+      margin: 16px 0 12px 0;
     }
 
     button {
       background-color: #D0DF00;
+      border: none;
       font-weight: bold;
+      color: #000;
       padding: 14px;
       font-size: 16px;
-      border: none;
       border-radius: 8px;
       cursor: pointer;
       width: 100%;
+      transition: background-color 0.3s ease;
       margin-top: 16px;
+    }
+
+    button:hover {
+      background-color: #c4d600;
+    }
+
+
+    input:focus {
+      outline: 2px solid #D0DF00;
+    }
+
+    button {
+      background-color: #D0DF00;
+      border: none;
+      font-weight: bold;
+      color: #000;
+      transition: background-color 0.3s ease;
     }
 
     button:hover {
@@ -57,13 +87,11 @@
     .success {
       color: green;
       font-weight: bold;
-      margin-top: 12px;
     }
 
     .error {
       color: red;
       font-weight: bold;
-      margin-top: 12px;
     }
   </style>
 </head>
@@ -81,20 +109,16 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script>
-    const { createClient } = supabase;
-    const supabaseClient = createClient(
-      'https://ibokmarwzyysudrpwopw.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlib2ttYXJ3enl5c3VkcnB3b3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1MDg4NDEsImV4cCI6MjA1OTA4NDg0MX0.CmdHJBwrXs0KaC_qrHit01wycM-gzflHiovZedPZF5E'
-    );
-
     const status = document.getElementById('status');
     const passwordInput = document.getElementById('password');
     const repeatPasswordInput = document.getElementById('repeatPassword');
 
-    async function handleReset() {
-      status.textContent = '';
-      status.className = '';
+    const supabase = supabase.createClient(
+      'https://ibokmarwzyysudrpwopw.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlib2ttYXJ3enl5c3VkcnB3b3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1MDg4NDEsImV4cCI6MjA1OTA4NDg0MX0.CmdHJBwrXs0KaC_qrHit01wycM-gzflHiovZedPZF5E'
+    );
 
+    async function handleReset() {
       const password = passwordInput.value.trim();
       const repeatPassword = repeatPasswordInput.value.trim();
 
@@ -110,43 +134,41 @@
         return;
       }
 
-      const hashParams = new URLSearchParams(window.location.hash.split('#')[1]);
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
       const access_token = hashParams.get('access_token');
       const refresh_token = hashParams.get('refresh_token');
 
       if (!access_token || !refresh_token) {
-        status.textContent = 'Enlace inválido o expirado. Por favor, solicita uno nuevo.';
+        status.textContent = 'Enlace inválido o expirado.';
         status.className = 'error';
         return;
       }
 
-      try {
-        const { error: sessionError } = await supabaseClient.auth.setSession({
-          access_token,
-          refresh_token
-        });
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token,
+        refresh_token
+      });
 
-        if (sessionError) {
-          throw sessionError;
-        }
-
-        const { error } = await supabaseClient.auth.updateUser({ password });
-
-        if (error) {
-          status.textContent = 'Error al actualizar la contraseña.';
-          status.className = 'error';
-        } else {
-          status.textContent = 'Contraseña actualizada correctamente.';
-          status.className = 'success';
-          passwordInput.value = '';
-          repeatPasswordInput.value = '';
-        }
-      } catch (err) {
-        console.error(err);
-        status.textContent = 'Hubo un error. Inténtalo de nuevo.';
+      if (sessionError) {
+        console.error(sessionError);
+        status.textContent = 'No se pudo iniciar sesión para actualizar.';
         status.className = 'error';
+        return;
+      }
+
+      const { error } = await supabase.auth.updateUser({ password });
+
+      if (error) {
+        console.error(error);
+        status.textContent = 'Error al actualizar la contraseña.';
+        status.className = 'error';
+      } else {
+        status.textContent = 'Contraseña actualizada correctamente.';
+        status.className = 'success';
+        passwordInput.value = '';
+        repeatPasswordInput.value = '';
       }
     }
   </script>
 </body>
-</html>
+</html> 
