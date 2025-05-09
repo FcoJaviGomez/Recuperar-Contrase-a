@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Restablecer Contraseña</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f7f7f7;
+      color: #1f2937;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 32px;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    input {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 2px solid #D0DF00;
+      margin: 12px 0;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #D0DF00;
+      font-weight: bold;
+      padding: 14px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 16px;
+    }
+    .success {
+      color: green;
+      font-weight: bold;
+      margin-top: 12px;
+    }
+    .error {
+      color: red;
+      font-weight: bold;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Restablecer Contraseña</h2>
+    <p>Introduce y confirma tu nueva contraseña.</p>
+    <input type="password" id="password" placeholder="Nueva contraseña" />
+    <input type="password" id="repeatPassword" placeholder="Repetir contraseña" />
+    <button id="resetBtn">Guardar contraseña</button>
+    <p id="status"></p>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(
+      'https://ibokmarwzyysudrpwopw.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlib2ttYXJ3enl5c3VkcnB3b3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1MDg4NDEsImV4cCI6MjA1OTA4NDg0MX0.CmdHJBwrXs0KaC_qrHit01wycM-gzflHiovZedPZF5E'
+    );
+
+    const passwordInput = document.getElementById('password');
+    const repeatInput = document.getElementById('repeatPassword');
+    const status = document.getElementById('status');
+    const resetBtn = document.getElementById('resetBtn');
+
+    resetBtn.addEventListener('click', async () => {
+      const password = passwordInput.value.trim();
+      const repeat = repeatInput.value.trim();
+
+      status.textContent = '';
+      status.className = '';
+
+      if (password.length < 6) {
+        status.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+        status.className = 'error';
+        return;
+      }
+
+      if (password !== repeat) {
+        status.textContent = 'Las contraseñas no coinciden.';
+        status.className = 'error';
+        return;
+      }
+
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
+      const access_token = hashParams.get('access_token');
+      const refresh_token = hashParams.get('refresh_token');
+
+      if (!access_token || !refresh_token) {
+        status.textContent = 'Enlace inválido o expirado.';
+        status.className = 'error';
+        return;
+      }
+
+      const { error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
+
+      if (sessionError) {
+        console.error(sessionError);
+        status.textContent = 'No se pudo iniciar sesión.';
+        status.className = 'error';
+        return;
+      }
+
+      const { error } = await supabase.auth.updateUser({ password });
+
+      if (error) {
+        console.error(error);
+        status.textContent = 'Error al actualizar la contraseña.';
+        status.className = 'error';
+      } else {
+        status.textContent = 'Contraseña actualizada correctamente.';
+        status.className = 'success';
+        passwordInput.value = '';
+        repeatInput.value = '';
+      }
+    });
+  </script>
+</body>
+</html>
